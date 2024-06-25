@@ -69,12 +69,12 @@ const CountryList = () => {
     );
   }
 
-  const onToggleClick = (id) => {
+  const onToggleClick = (id: string) => {
     // console.log(id);
     // 선택된 국가 찾기
     const selectedCountry = countryInfos.find((item) => item.id === id);
     // 선택된 국가가 있으면 해당 국가를 제외하고 상태 업데이트
-    setSelectedCountries((prev) => {
+    setSelectedCountries((prev: Country[]) => {
       const isSelected = prev.find((item) => item.id === id);
       if (isSelected) {
         return prev.filter((item) => item.id !== id);
@@ -87,7 +87,7 @@ const CountryList = () => {
 
   return (
     <Main>
-      <div>
+      <section>
         <h1>Favorite Countires</h1>
         {selectedCountries && (
           <CountryCard
@@ -95,11 +95,16 @@ const CountryList = () => {
             onToggleClick={onToggleClick}
           />
         )}
-      </div>
-      <div>
+      </section>
+      <section>
         <h2>Countries</h2>
+        <BtnBox>
+          <span>[ Sorted By ]</span>
+          <button>A-Z</button>
+          <button>Z-A</button>
+        </BtnBox>
         <CountryCard country={countryInfos} onToggleClick={onToggleClick} />
-      </div>
+      </section>
     </Main>
   );
 };
@@ -123,11 +128,39 @@ const Main = styled.main`
     font-weight: 600;
   }
 
-  div {
+  section {
     width: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 30px;
+  }
+`;
+
+const BtnBox = styled.div`
+  /* height: 30px; */
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 10px;
+
+  span {
+    height: 25px;
+    font-size: 20px;
+    font-weight: 400;
+  }
+
+  button {
+    border: 1px solid black;
+    border-radius: 50px;
+    min-width: 80px;
+    height: 35px;
+    font-size: 17px;
+    text-align: center;
+    &:hover {
+      background-color: black;
+      color: white;
+      cursor: pointer;
+    }
   }
 `;
