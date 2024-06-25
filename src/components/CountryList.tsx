@@ -10,11 +10,12 @@ const CountryList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [countryInfos, setCountryInfos] = useState<Country[]>([]);
+  const [selectedCountries, setSelectedCountries] = useState<Country[]>([]);
 
   const fetchData = async () => {
     try {
       const data: CountryInfo[] = await getCountryDatas();
-      console.log("data => ", data);
+      // console.log("data => ", data);
       // data 배열을 돌면서 countryName과 capital 만 저장
       const newCountryInfos = data
         ?.filter((info) => {
@@ -68,16 +69,37 @@ const CountryList = () => {
     );
   }
 
+  const onToggleClick = (id) => {
+    // console.log(id);
+    // 선택된 국가 찾기
+    const selectedCountry = countryInfos.find((item) => item.id === id);
+    // 선택된 국가가 있으면 해당 국가를 제외하고 상태 업데이트
+    setSelectedCountries((prev) => {
+      const isSelected = prev.find((item) => item.id === id);
+      if (isSelected) {
+        return prev.filter((item) => item.id !== id);
+      }
+      return [...prev, selectedCountry];
+    });
+
+    // console.log("selectedCountry => ", selectedCountry);
+  };
+
   return (
     <Main>
-      <h1>Favorite Countires</h1>
-      <h2>Countries</h2>
-      <ul>
-        {countryInfos &&
-          countryInfos.map((list) => (
-            <CountryCard key={list.id} country={list} />
-          ))}
-      </ul>
+      <div>
+        <h1>Favorite Countires</h1>
+        {selectedCountries && (
+          <CountryCard
+            country={selectedCountries}
+            onToggleClick={onToggleClick}
+          />
+        )}
+      </div>
+      <div>
+        <h2>Countries</h2>
+        <CountryCard country={countryInfos} onToggleClick={onToggleClick} />
+      </div>
     </Main>
   );
 };
@@ -100,12 +122,12 @@ const Main = styled.main`
     font-size: 40px;
     font-weight: 600;
   }
-  ul {
+
+  div {
     width: 100%;
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    grid-auto-rows: 160px;
-    gap: 20px;
-    padding: 0px 80px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
   }
 `;

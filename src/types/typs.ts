@@ -12,4 +12,5 @@ export type Country = {
   id: string;
   countryName: string;
   capitalCity: string;
+  flagImage: string;
 };
