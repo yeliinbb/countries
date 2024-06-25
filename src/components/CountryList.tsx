@@ -11,6 +11,7 @@ const CountryList = () => {
   const [error, setError] = useState<Error | null>(null);
   const [countryInfos, setCountryInfos] = useState<Country[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<Country[]>([]);
+  const [sortOption, setSortOption] = useState("default");
 
   const fetchData = async () => {
     try {
@@ -56,6 +57,16 @@ const CountryList = () => {
 
   useEffect(() => {
     fetchData();
+    const newArr = [...countryInfos];
+    switch (sortOption) {
+      case "A-Z":
+        newArr.sort((a, b) => a.countryName.localeCompare(b.countryName));
+        break;
+      case "Z-A":
+        newArr.sort((a, b) => b.countryName.localeCompare(a.countryName));
+        break;
+    }
+    setCountryInfos(newArr);
   }, [countryInfos]);
 
   if (isLoading) {
@@ -74,7 +85,7 @@ const CountryList = () => {
     // 선택된 국가 찾기
     const selectedCountry = countryInfos.find((item) => item.id === id);
     // 선택된 국가가 있으면 해당 국가를 제외하고 상태 업데이트
-    setSelectedCountries((prev: Country[]) => {
+    setSelectedCountries((prev) => {
       const isSelected = prev.find((item) => item.id === id);
       if (isSelected) {
         return prev.filter((item) => item.id !== id);
@@ -83,6 +94,24 @@ const CountryList = () => {
     });
 
     // console.log("selectedCountry => ", selectedCountry);
+  };
+
+  const sortAZ = () => {
+    const newArr = [...countryInfos];
+    const sortedArr = newArr.sort((a, b) =>
+      a.countryName.localeCompare(b.countryName)
+    );
+    console.log("sortedArr => ", sortedArr);
+    setCountryInfos(sortedArr);
+  };
+
+  const sortZA = () => {
+    const newArr = [...countryInfos];
+    const sortedArr = newArr.sort((a, b) =>
+      b.countryName.localeCompare(a.countryName)
+    );
+    console.log("sortedArr => ", sortedArr);
+    setCountryInfos(sortedArr);
   };
 
   return (
@@ -100,9 +129,17 @@ const CountryList = () => {
         <h2>Countries</h2>
         <BtnBox>
           <span>[ Sorted By ]</span>
-          <button>A-Z</button>
-          <button>Z-A</button>
+          <button onClick={sortAZ}>A-Z</button>
+          <button onClick={sortZA}>Z-A</button>
         </BtnBox>
+        <select
+          value={sortOption}
+          onChange={(e) => setSortOption(e.target.value)}
+        >
+          <option value="">Default</option>
+          <option value="A-Z">A-Z</option>
+          <option value="Z-A">Z-A</option>
+        </select>
         <CountryCard country={countryInfos} onToggleClick={onToggleClick} />
       </section>
     </Main>

@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import React from "react";
 import styled from "styled-components";
 import { Country } from "../types/typs";
 
 const CountryCard: React.FC<{
   country: Country[];
-  onToggleClick: (id: number) => void;
+  onToggleClick: (id: string) => void;
 }> = ({ country, onToggleClick }) => {
   return (
     <Ul>
