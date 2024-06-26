@@ -1,11 +1,25 @@
-import React from "react";
 import styled from "styled-components";
-import { Country } from "../types/types";
+import { CountryWithIsSelected } from "../types/country.type";
+import { useState } from "react";
 
-const CountryCard: React.FC<{
-  country: Country[];
+interface CountryCardProps {
+  country: CountryWithIsSelected[];
   onToggleSelect: (id: string) => void;
-}> = ({ country, onToggleSelect }) => {
+}
+
+const CountryCard = ({ country, onToggleSelect }: CountryCardProps) => {
+  // const [isSelected, setSelected] = useState<boolean>(false);
+
+  // const onClickHandler = (id: CountryWithIsSelected["id"]) => {
+  //   onToggleSelect(id);
+  //   if (onToggleSelect(id)) {
+  //     setSelected(!isSelected);
+  //   }
+  // };
+  //  const toggleIsSelected = () => {
+  //   if()
+  // };
+
   return (
     <Ul>
       {country &&
@@ -13,7 +27,7 @@ const CountryCard: React.FC<{
           <li
             key={list.id}
             onClick={() => onToggleSelect(list.id)}
-            // $isSelected={isSelected}
+            style={{ border: list.isSelected ? "1px solid green" : "none" }}
           >
             <img src={list.flagImage} alt="" />
             <div>
@@ -45,8 +59,6 @@ const Ul = styled.ul`
     padding: 20px;
     border-radius: 10px;
     gap: 20px;
-    /* border: ${(props) =>
-      props.$isSelected ? "1px solid green" : "none"}; */
     &:hover {
       box-shadow: 0px 10px 10px 1px rgba(0, 0, 0, 0.1);
       cursor: pointer;
@@ -74,46 +86,6 @@ const Ul = styled.ul`
         font-size: 18px;
         font-weight: 400;
       }
-    }
-  }
-`;
-
-const List = styled.li`
-  max-width: 350px;
-  min-width: 200px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  box-shadow: 0px 5px 10px 1px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  border-radius: 10px;
-  gap: 20px;
-  &:hover {
-    box-shadow: 0px 10px 10px 1px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-  }
-  &:active {
-    border: 1px solid green;
-  }
-
-  img {
-    align-self: center;
-    width: 80px;
-    height: 50px;
-    object-fit: cover;
-  }
-
-  div {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    h4 {
-      font-size: 20px;
-      font-weight: 600;
-    }
-    h5 {
-      font-size: 18px;
-      font-weight: 400;
     }
   }
 `;

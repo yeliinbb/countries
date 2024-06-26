@@ -2,19 +2,20 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { getCountryDatas } from "../api/countryApi";
 import CountryCard from "./CountryCard";
-import { Country, CountryInfo } from "../types/types";
-
-type CountryList = Country[];
+import { CountryInfo, CountryWithIsSelected } from "../types/country.type";
+import { AxiosError } from "axios";
 
 const CountryList = () => {
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [countryInfos, setCountryInfos] = useState<Country[]>([]);
-  const [selectedCountries, setSelectedCountries] = useState<Country[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<AxiosError | null>(null);
+  const [countryInfos, setCountryInfos] = useState<CountryWithIsSelected[]>([]);
+  const [selectedCountries, setSelectedCountries] = useState<
+    CountryWithIsSelected[]
+  >([]);
   const [sortOption, setSortOption] = useState("Default");
-  let initialCountryInfos: Country[] = [];
+  let initialCountryInfos: CountryWithIsSelected[] = [];
 
-  const fetchData = async () => {
+  const fetchData = async (): Promise<void> => {
     try {
       const data: CountryInfo[] = await getCountryDatas();
       // console.log("data => ", data);
@@ -35,12 +36,13 @@ const CountryList = () => {
             flags: { svg: flagImage },
           } = info;
 
-          const newCountry: Country = {
+          const newCountry = {
             countryName: countryName,
-            capitalCity: capital[0],
+            capitalCity: capital ? capital[0] : "Unknown",
             flagImage: flagImage,
             id: crypto.randomUUID(),
-          } as Country;
+            isSelected: false,
+          };
           return newCountry;
         });
 
@@ -50,10 +52,14 @@ const CountryList = () => {
         }
         setCountryInfos(newCountryInfos || []);
       }
-      console.log("countryInfos => ", countryInfos);
+      // console.log("countryInfos => ", countryInfos);
     } catch (error) {
-      console.error("Error fetching data:", error);
-      setError(error as Error);
+      // AxiosError의 에러인지 확인 필요
+      if (error instanceof AxiosError) {
+        setError(error);
+      } else {
+        console.error("Error fetching data:", error);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -74,41 +80,89 @@ const CountryList = () => {
     );
   }
 
-  const onToggleSelect = (id: string): void => {
-    // console.log(id);
-    // 선택된 국가 찾기
-    const selectedCountry = countryInfos.find((country) => country.id === id);
-    // 선택된 국가가 있으면 해당 국가를 제외하고 상태 업데이트
+  // const onToggleSelect = (id: CountryWithIsSelected["id"]): void => {
+  //   // console.log(id);
+  //   // 선택된 국가 찾기
+  //   const selectedCountry = countryInfos.find((country) => country.id === id);
+  //   // 선택된 국가가 있으면 해당 국가를 제외하고 상태 업데이트
+  //   setSelectedCountries((prev) => {
+  //     const isSelected = prev.find((country) => country.id === id);
+  //     if (isSelected) {
+  //       return prev.filter((country) => country.id !== id);
+  //     }
+  //     return [...prev, selectedCountry] as CountryWithIsSelected[];
+  //   });
+
+  //   if (selectedCountry) {
+  //     // 선택되지 않은 국가들로 다시 상태 업데이트
+  //     const unselectedCountryList = countryInfos.filter(
+  //       (country) => country.id !== id
+  //     );
+  //     setCountryInfos((prev) => {
+  //       const isSelected = prev.find((country) => country.id === id);
+  //       if (isSelected) {
+  //         return [...unselectedCountryList];
+  //       }
+  //       return [
+  //         isSelected,
+  //         ...unselectedCountryList,
+  //       ] as CountryWithIsSelected[];
+  //     });
+  //   } else {
+  //     // 선택된 국가를 다시 클릭했을 때 클린한 나라를 다시 포함하여 리턴
+  //     console.log("test");
+  //     setCountryInfos((prev) => {
+  //       const isUnselected = countryInfos.find((country) => country.id === id);
+  //       return isUnselected ? [isUnselected, ...prev] : prev;
+  //     });
+  //   }
+  //   // console.log("selectedCountry => ", selectedCountry);
+  // };
+
+  const onToggleSelect = (id: CountryWithIsSelected["id"]): void => {
+    const selectedCountryList = countryInfos.map((country) =>
+      country.id === id
+        ? { ...country, isSelected: !country.isSelected }
+        : country
+    );
+
     setSelectedCountries((prev) => {
-      const isSelected = prev.find((country) => country.id === id);
-      if (isSelected) {
+      const isSelectedCountry = prev.find((country) => country.id === id);
+
+      if (isSelectedCountry) {
+        // unSelect 로직
+        console.log("unselected1");
         return prev.filter((country) => country.id !== id);
       }
-      return [...prev, selectedCountry] as Country[];
+      console.log("selected1");
+      return selectedCountryList.filter((country) => country.id === id);
     });
 
-    if (selectedCountry) {
-      // 선택되지 않은 국가들로 다시 상태 업데이트
-      const unselectedCountryList = countryInfos.filter(
-        (country) => country.id !== id
+    const unselectedCountryList = countryInfos.map((country) =>
+      country.id !== id
+        ? { ...country, isSelected: country.isSelected }
+        : country
+    );
+
+    setCountryInfos((prev) => {
+      console.log("prev", prev);
+      const isSelectedCountry = selectedCountryList.find(
+        (country) => country.id === id
       );
-      setCountryInfos((prev) => {
-        const isSelected = prev.find((country) => country.id === id);
-        if (isSelected) {
-          return [isSelected, ...unselectedCountryList];
-        }
-        return [...unselectedCountryList] as Country[];
-      });
-    } else {
-      // 선택된 국가를 다시 클릭했을 때 클린한 나라를 다시 포함하여 리턴
-    }
-    // console.log("selectedCountry => ", selectedCountry);
+      console.log("isSelectedCountry => ", isSelectedCountry);
+      if (!isSelectedCountry) {
+        console.log("unselected2");
+        // return [isSelectedCountry, ...prev];
+      }
+      console.log("selected2");
+      return unselectedCountryList.filter((country) => country.id !== id);
+    });
   };
 
   const sortCountries = (
     sortOption: string,
-    countryInfos: Country[]
-  ): Country[] => {
+    countryInfos: CountryWithIsSelected[]
+  ): CountryWithIsSelected[] => {
     const newArr = [...countryInfos];
     switch (sortOption) {
       case "A-Z":
