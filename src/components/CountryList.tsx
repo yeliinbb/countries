@@ -120,23 +120,11 @@ const CountryList = () => {
   // };
 
   const onToggleSelect = (id: CountryWithIsSelected["id"]): void => {
-    const selectedCountryList = countryInfos.map((country) =>
+    const updatedCountryInfos = countryInfos.map((country) =>
       country.id === id
         ? { ...country, isSelected: !country.isSelected }
         : country
     );
-
-    setSelectedCountries((prev) => {
-      const isSelectedCountry = prev.find((country) => country.id === id);
-
-      if (isSelectedCountry) {
-        // unSelect 로직
-        console.log("unselected1");
-        return prev.filter((country) => country.id !== id);
-      }
-      console.log("selected1");
-      return selectedCountryList.filter((country) => country.id === id);
-    });
 
     const unselectedCountryList = countryInfos.map((country) =>
       country.id !== id
@@ -144,19 +132,36 @@ const CountryList = () => {
         : country
     );
 
-    setCountryInfos((prev) => {
-      console.log("prev", prev);
-      const isSelectedCountry = selectedCountryList.find(
-        (country) => country.id === id
-      );
-      console.log("isSelectedCountry => ", isSelectedCountry);
-      if (!isSelectedCountry) {
+    const isSelectedCountry = selectedCountries.find(
+      (country) => country.id === id
+    );
+    // console.log("isSelectedCountry => ", isSelectedCountry);
+
+    if (!isSelectedCountry) {
+      setSelectedCountries((prev) => {
+        // console.log("selected1");
+        const selectedCountry = updatedCountryInfos.find(
+          (country) => country.id === id
+        );
+        // console.log(selectedCountry);
+        return [...prev, selectedCountry];
+      });
+      setCountryInfos(() => {
+        // console.log("selected2");
+        return unselectedCountryList.filter((country) => country.id !== id);
+      });
+    } else {
+      setSelectedCountries((prev) => {
+        console.log("unselected1");
+        return prev.filter((country) => country.id !== id);
+      });
+      setCountryInfos((prev) => {
+        const selected = selectedCountries.find((country) => country.id === id);
+        console.log("selected => ", selected);
         console.log("unselected2");
-        // return [isSelectedCountry, ...prev];
-      }
-      console.log("selected2");
-      return unselectedCountryList.filter((country) => country.id !== id);
-    });
+        return selected ? [{ ...selected, isSelected: false }, ...prev] : prev;
+      });
+    }
   };
 
   const sortCountries = (
