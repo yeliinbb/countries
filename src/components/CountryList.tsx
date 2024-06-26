@@ -11,8 +11,8 @@ const CountryList = () => {
   const [error, setError] = useState<Error | null>(null);
   const [countryInfos, setCountryInfos] = useState<Country[]>([]);
   const [selectedCountries, setSelectedCountries] = useState<Country[]>([]);
-  const [sortOption, setSortOption] = useState("default");
-
+  const [sortOption, setSortOption] = useState("Default");
+  let initialCountryInfos: Country[] = [];
   const fetchData = async () => {
     try {
       const data: CountryInfo[] = await getCountryDatas();
@@ -44,6 +44,9 @@ const CountryList = () => {
         });
 
       if (countryInfos.length === 0) {
+        for (const country of countryInfos) {
+          initialCountryInfos.push(country);
+        }
         setCountryInfos(newCountryInfos || []);
       }
       console.log("countryInfos => ", countryInfos);
@@ -57,16 +60,6 @@ const CountryList = () => {
 
   useEffect(() => {
     fetchData();
-    const newArr = [...countryInfos];
-    switch (sortOption) {
-      case "A-Z":
-        newArr.sort((a, b) => a.countryName.localeCompare(b.countryName));
-        break;
-      case "Z-A":
-        newArr.sort((a, b) => b.countryName.localeCompare(a.countryName));
-        break;
-    }
-    setCountryInfos(newArr);
   }, [countryInfos]);
 
   if (isLoading) {
@@ -96,22 +89,30 @@ const CountryList = () => {
     // console.log("selectedCountry => ", selectedCountry);
   };
 
-  const sortAZ = () => {
+  const sortCountries = (
+    sortOption: string,
+    countryInfos: Country[]
+  ): Country[] => {
     const newArr = [...countryInfos];
-    const sortedArr = newArr.sort((a, b) =>
-      a.countryName.localeCompare(b.countryName)
-    );
-    console.log("sortedArr => ", sortedArr);
-    setCountryInfos(sortedArr);
+    switch (sortOption) {
+      case "A-Z":
+        newArr.sort((a, b) => a.countryName.localeCompare(b.countryName));
+        break;
+      case "Z-A":
+        newArr.sort((a, b) => b.countryName.localeCompare(a.countryName));
+        break;
+      case "Default":
+        return [...initialCountryInfos];
+      default:
+        return countryInfos;
+    }
+    return newArr;
   };
 
-  const sortZA = () => {
-    const newArr = [...countryInfos];
-    const sortedArr = newArr.sort((a, b) =>
-      b.countryName.localeCompare(a.countryName)
-    );
-    console.log("sortedArr => ", sortedArr);
-    setCountryInfos(sortedArr);
+  const handleSortChange = (sortOption: string) => {
+    setSortOption(sortOption);
+    const sortedCountries = sortCountries(sortOption, countryInfos);
+    setCountryInfos(sortedCountries);
   };
 
   return (
@@ -129,17 +130,10 @@ const CountryList = () => {
         <h2>Countries</h2>
         <BtnBox>
           <span>[ Sorted By ]</span>
-          <button onClick={sortAZ}>A-Z</button>
-          <button onClick={sortZA}>Z-A</button>
+          <button onClick={() => handleSortChange("Default")}>Default</button>
+          <button onClick={() => handleSortChange("A-Z")}>A-Z</button>
+          <button onClick={() => handleSortChange("Z-A")}>Z-A</button>
         </BtnBox>
-        <select
-          value={sortOption}
-          onChange={(e) => setSortOption(e.target.value)}
-        >
-          <option value="">Default</option>
-          <option value="A-Z">A-Z</option>
-          <option value="Z-A">Z-A</option>
-        </select>
         <CountryCard country={countryInfos} onToggleClick={onToggleClick} />
       </section>
     </Main>
