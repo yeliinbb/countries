@@ -80,47 +80,8 @@ const CountryList = () => {
     );
   }
 
-  // const onToggleSelect = (id: CountryWithIsSelected["id"]): void => {
-  //   // console.log(id);
-  //   // 선택된 국가 찾기
-  //   const selectedCountry = countryInfos.find((country) => country.id === id);
-  //   // 선택된 국가가 있으면 해당 국가를 제외하고 상태 업데이트
-  //   setSelectedCountries((prev) => {
-  //     const isSelected = prev.find((country) => country.id === id);
-  //     if (isSelected) {
-  //       return prev.filter((country) => country.id !== id);
-  //     }
-  //     return [...prev, selectedCountry] as CountryWithIsSelected[];
-  //   });
-
-  //   if (selectedCountry) {
-  //     // 선택되지 않은 국가들로 다시 상태 업데이트
-  //     const unselectedCountryList = countryInfos.filter(
-  //       (country) => country.id !== id
-  //     );
-  //     setCountryInfos((prev) => {
-  //       const isSelected = prev.find((country) => country.id === id);
-  //       if (isSelected) {
-  //         return [...unselectedCountryList];
-  //       }
-  //       return [
-  //         isSelected,
-  //         ...unselectedCountryList,
-  //       ] as CountryWithIsSelected[];
-  //     });
-  //   } else {
-  //     // 선택된 국가를 다시 클릭했을 때 클린한 나라를 다시 포함하여 리턴
-  //     console.log("test");
-  //     setCountryInfos((prev) => {
-  //       const isUnselected = countryInfos.find((country) => country.id === id);
-  //       return isUnselected ? [isUnselected, ...prev] : prev;
-  //     });
-  //   }
-  //   // console.log("selectedCountry => ", selectedCountry);
-  // };
-
   const onToggleSelect = (id: CountryWithIsSelected["id"]): void => {
-    const updatedCountryInfos = countryInfos.map((country) =>
+    const selectedCountryList = countryInfos.map((country) =>
       country.id === id
         ? { ...country, isSelected: !country.isSelected }
         : country
@@ -140,7 +101,7 @@ const CountryList = () => {
     if (!isSelectedCountry) {
       setSelectedCountries((prev) => {
         // console.log("selected1");
-        const selectedCountry = updatedCountryInfos.find(
+        const selectedCountry = selectedCountryList.find(
           (country) => country.id === id
         );
         // console.log(selectedCountry);
