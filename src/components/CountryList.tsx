@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { getCountryDatas } from "../api/countryApi";
 import CountryCard from "./CountryCard";
-import { Country, CountryInfo } from "../types/typs";
+import { Country, CountryInfo } from "../types/types";
 
 type CountryList = Country[];
 
@@ -13,6 +13,7 @@ const CountryList = () => {
   const [selectedCountries, setSelectedCountries] = useState<Country[]>([]);
   const [sortOption, setSortOption] = useState("Default");
   let initialCountryInfos: Country[] = [];
+
   const fetchData = async () => {
     try {
       const data: CountryInfo[] = await getCountryDatas();
@@ -73,19 +74,34 @@ const CountryList = () => {
     );
   }
 
-  const onToggleClick = (id: string) => {
+  const onToggleSelect = (id: string): void => {
     // console.log(id);
     // 선택된 국가 찾기
-    const selectedCountry = countryInfos.find((item) => item.id === id);
+    const selectedCountry = countryInfos.find((country) => country.id === id);
     // 선택된 국가가 있으면 해당 국가를 제외하고 상태 업데이트
     setSelectedCountries((prev) => {
-      const isSelected = prev.find((item) => item.id === id);
+      const isSelected = prev.find((country) => country.id === id);
       if (isSelected) {
-        return prev.filter((item) => item.id !== id);
+        return prev.filter((country) => country.id !== id);
       }
-      return [...prev, selectedCountry];
+      return [...prev, selectedCountry] as Country[];
     });
 
+    if (selectedCountry) {
+      // 선택되지 않은 국가들로 다시 상태 업데이트
+      const unselectedCountryList = countryInfos.filter(
+        (country) => country.id !== id
+      );
+      setCountryInfos((prev) => {
+        const isSelected = prev.find((country) => country.id === id);
+        if (isSelected) {
+          return [isSelected, ...unselectedCountryList];
+        }
+        return [...unselectedCountryList] as Country[];
+      });
+    } else {
+      // 선택된 국가를 다시 클릭했을 때 클린한 나라를 다시 포함하여 리턴
+    }
     // console.log("selectedCountry => ", selectedCountry);
   };
 
@@ -118,11 +134,11 @@ const CountryList = () => {
   return (
     <Main>
       <section>
-        <h1>Favorite Countires</h1>
+        <h1>Favorite Countries</h1>
         {selectedCountries && (
           <CountryCard
             country={selectedCountries}
-            onToggleClick={onToggleClick}
+            onToggleSelect={onToggleSelect}
           />
         )}
       </section>
@@ -134,7 +150,7 @@ const CountryList = () => {
           <button onClick={() => handleSortChange("A-Z")}>A-Z</button>
           <button onClick={() => handleSortChange("Z-A")}>Z-A</button>
         </BtnBox>
-        <CountryCard country={countryInfos} onToggleClick={onToggleClick} />
+        <CountryCard country={countryInfos} onToggleSelect={onToggleSelect} />
       </section>
     </Main>
   );

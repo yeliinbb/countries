@@ -1,18 +1,18 @@
 import React from "react";
 import styled from "styled-components";
-import { Country } from "../types/typs";
+import { Country } from "../types/types";
 
 const CountryCard: React.FC<{
   country: Country[];
-  onToggleClick: (id: string) => void;
-}> = ({ country, onToggleClick }) => {
+  onToggleSelect: (id: string) => void;
+}> = ({ country, onToggleSelect }) => {
   return (
     <Ul>
       {country &&
         country.map((list) => (
           <li
             key={list.id}
-            onClick={() => onToggleClick(list.id)}
+            onClick={() => onToggleSelect(list.id)}
             // $isSelected={isSelected}
           >
             <img src={list.flagImage} alt="" />
