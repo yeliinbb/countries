@@ -80,17 +80,10 @@ const CountryList = () => {
     );
   }
 
-  // countryInfos의 상태를 변화하는 로직 수정 -> filteredCountries에 담아서 ui 그려주기
   const onToggleSelect = (id: CountryWithIsSelected["id"]): void => {
-    const selectedCountryList = countryInfos.map((country) =>
+    const updatedCountryList = countryInfos.map((country) =>
       country.id === id
         ? { ...country, isSelected: !country.isSelected }
-        : country
-    );
-
-    const unselectedCountryList = countryInfos.map((country) =>
-      country.id !== id
-        ? { ...country, isSelected: country.isSelected }
         : country
     );
 
@@ -102,29 +95,29 @@ const CountryList = () => {
     if (!isSelectedCountry) {
       setSelectedCountries((prev) => {
         // console.log("selected1");
-        const selectedCountry = selectedCountryList.find(
+        const selectedCountry = updatedCountryList.find(
           (country) => country.id === id
         );
         // console.log(selectedCountry);
         return selectedCountry ? [...prev, selectedCountry] : prev;
-      });
-      setCountryInfos(() => {
-        // console.log("selected2");
-        return unselectedCountryList.filter((country) => country.id !== id);
       });
     } else {
       setSelectedCountries((prev) => {
         console.log("unselected1");
         return prev.filter((country) => country.id !== id);
       });
-      setCountryInfos((prev) => {
-        const selected = selectedCountries.find((country) => country.id === id);
-        console.log("selected => ", selected);
-        console.log("unselected2");
-        return selected ? [{ ...selected, isSelected: false }, ...prev] : prev;
-      });
     }
   };
+
+  // 배열의 각 요소에서 id를 추출하여 집합(Set)에 저장
+  const selectedCountryIds = new Set(
+    selectedCountries.map((country) => country.id)
+  );
+  // countryInfos의 상태를 변화하는 로직 수정 -> filteredCountries에 담아서 ui 그려주기
+  // id가 포함되지 않은 경우 즉, 선택되지 않은 국가들만 필터링해줌.
+  const filteredCountries = countryInfos.filter(
+    (country) => !selectedCountryIds.has(country.id)
+  );
 
   const sortCountries = (
     sortOption: string,
@@ -173,7 +166,10 @@ const CountryList = () => {
         </BtnBox>
         {/* countryInfos 자체를 넘겨주는게 아니라 filteredCountries를 넘겨줘서
         기존의 countryInfos는 초기값을 유지할 수 있도록 */}
-        <CountryCard country={countryInfos} onToggleSelect={onToggleSelect} />
+        <CountryCard
+          country={filteredCountries}
+          onToggleSelect={onToggleSelect}
+        />
       </section>
     </Main>
   );
