@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import { CountryWithIsSelected } from "../types/country.type";
-import { useState } from "react";
 
 interface CountryCardProps {
   country: CountryWithIsSelected[];
@@ -8,18 +7,6 @@ interface CountryCardProps {
 }
 
 const CountryCard = ({ country, onToggleSelect }: CountryCardProps) => {
-  // const [isSelected, setSelected] = useState<boolean>(false);
-
-  // const onClickHandler = (id: CountryWithIsSelected["id"]) => {
-  //   onToggleSelect(id);
-  //   if (onToggleSelect(id)) {
-  //     setSelected(!isSelected);
-  //   }
-  // };
-  //  const toggleIsSelected = () => {
-  //   if()
-  // };
-
   return (
     <Ul>
       {country &&

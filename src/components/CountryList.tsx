@@ -19,7 +19,7 @@ const CountryList = () => {
     try {
       const data: CountryInfo[] = await getCountryDatas();
       // console.log("data => ", data);
-      // data 배열을 돌면서 countryName과 capital 만 저장
+      // data 배열을 돌면서 countryName과 capital, flagImage 만 저장
       const newCountryInfos = data
         ?.filter((info) => {
           const {
@@ -80,6 +80,7 @@ const CountryList = () => {
     );
   }
 
+  // countryInfos의 상태를 변화하는 로직 수정 -> filteredCountries에 담아서 ui 그려주기
   const onToggleSelect = (id: CountryWithIsSelected["id"]): void => {
     const selectedCountryList = countryInfos.map((country) =>
       country.id === id
@@ -105,7 +106,7 @@ const CountryList = () => {
           (country) => country.id === id
         );
         // console.log(selectedCountry);
-        return [...prev, selectedCountry];
+        return selectedCountry ? [...prev, selectedCountry] : prev;
       });
       setCountryInfos(() => {
         // console.log("selected2");
@@ -170,6 +171,8 @@ const CountryList = () => {
           <button onClick={() => handleSortChange("A-Z")}>A-Z</button>
           <button onClick={() => handleSortChange("Z-A")}>Z-A</button>
         </BtnBox>
+        {/* countryInfos 자체를 넘겨주는게 아니라 filteredCountries를 넘겨줘서
+        기존의 countryInfos는 초기값을 유지할 수 있도록 */}
         <CountryCard country={countryInfos} onToggleSelect={onToggleSelect} />
       </section>
     </Main>
@@ -205,15 +208,16 @@ const Main = styled.main`
 `;
 
 const BtnBox = styled.div`
-  /* height: 30px; */
+  height: fit-content;
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 10px;
 
   span {
-    height: 25px;
-    font-size: 20px;
+    height: fit-content;
+    /* line-height: normal; */
+    font-size: 17px;
     font-weight: 400;
   }
 
