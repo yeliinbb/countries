@@ -12,7 +12,6 @@ const CountryList = () => {
   const [selectedCountries, setSelectedCountries] = useState<
     CountryWithIsSelected[]
   >([]);
-  const [sortOption, setSortOption] = useState("Default");
   let initialCountryInfos: CountryWithIsSelected[] = [];
 
   const fetchData = async (): Promise<void> => {
@@ -140,7 +139,6 @@ const CountryList = () => {
   };
 
   const handleSortChange = (sortOption: string) => {
-    setSortOption(sortOption);
     const sortedCountries = sortCountries(sortOption, countryInfos);
     setCountryInfos(sortedCountries);
   };
