@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { getCountryDatas } from "../api/countryApi";
 import CountryCard from "./CountryCard";
-import { CountryInfo, CountryWithIsSelected } from "../types/country.type";
+import { CountryInfoAll, CountryWithIsSelected } from "../types/country.type";
 import { AxiosError } from "axios";
 
 const CountryList = () => {
@@ -17,7 +17,7 @@ const CountryList = () => {
 
   const fetchData = async (): Promise<void> => {
     try {
-      const data: CountryInfo[] = await getCountryDatas();
+      const data: CountryInfoAll[] = await getCountryDatas();
       // console.log("data => ", data);
       // data 배열을 돌면서 countryName과 capital, flagImage 만 저장
       const newCountryInfos = data
