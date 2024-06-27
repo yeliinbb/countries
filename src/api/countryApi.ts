@@ -10,10 +10,10 @@ export const getCountryDatas = async (): Promise<CountryInfoAll[]> => {
 };
 
 // 데이터 변환 함수
-const transformData = () => {};
+// const transformData = () => {};
 
 // 데이터 삽입 함수
-const insertData = () => {};
+// const insertData = () => {};
 
 // API에서 데이터 가져오기 및 삽입
-const fetchDataAndInsert = () => {};
+// const fetchDataAndInsert = () => {};
