@@ -88,7 +88,7 @@ export type CountryInfo = {
   };
 };
 
-type Country = {
+export type Country = {
   id: string;
   countryName: string;
   capitalCity: string;

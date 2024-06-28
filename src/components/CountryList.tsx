@@ -1,8 +1,12 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import { getCountryDatas } from "../api/countryApi";
+import {
+  deleteData,
+  fetchDataAndTransform,
+  insertData,
+} from "../api/countryApi";
 import CountryCard from "./CountryCard";
-import { CountryInfoAll, CountryWithIsSelected } from "../types/country.type";
+import { CountryWithIsSelected } from "../types/country.type";
 import { AxiosError } from "axios";
 
 const CountryList = () => {
@@ -14,59 +18,30 @@ const CountryList = () => {
   >([]);
   let initialCountryInfos: CountryWithIsSelected[] = [];
 
-  const fetchData = async (): Promise<void> => {
-    try {
-      const data: CountryInfoAll[] = await getCountryDatas();
-      // console.log("data => ", data);
-      // data 배열을 돌면서 countryName과 capital, flagImage 만 저장
-      const newCountryInfos = data
-        ?.filter((info) => {
-          const {
-            name: { common: countryName },
-            capital,
-            flags: { svg: flagImage },
-          } = info;
-          return countryName && capital && flagImage;
-        })
-        .map((info) => {
-          const {
-            name: { common: countryName },
-            capital,
-            flags: { svg: flagImage },
-          } = info;
-
-          const newCountry = {
-            countryName: countryName,
-            capitalCity: capital ? capital[0] : "Unknown",
-            flagImage: flagImage,
-            id: crypto.randomUUID(),
-            isSelected: false,
-          };
-          return newCountry;
-        });
-
-      if (countryInfos.length === 0) {
-        for (const country of countryInfos) {
-          initialCountryInfos.push(country);
-        }
-        setCountryInfos(newCountryInfos || []);
-      }
-      // console.log("countryInfos => ", countryInfos);
-    } catch (error) {
-      // AxiosError의 에러인지 확인 필요
-      if (error instanceof AxiosError) {
-        setError(error);
-      } else {
-        console.error("Error fetching data:", error);
-      }
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchData();
-  }, [countryInfos]);
+    const fetchCountryData = async () => {
+      try {
+        const data = await fetchDataAndTransform();
+        console.log("data => ", data);
+        if (countryInfos.length === 0) {
+          for (const country of countryInfos) {
+            initialCountryInfos.push(country);
+          }
+          setCountryInfos(data || []);
+        }
+      } catch (error) {
+        // AxiosError의 에러인지 확인 필요
+        if (error instanceof AxiosError) {
+          setError(error);
+        } else {
+          console.error("Error fetching data:", error);
+        }
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    fetchCountryData();
+  }, []);
 
   if (isLoading) {
     return <div style={{ fontSize: 36 }}>로딩중...</div>;
@@ -89,20 +64,31 @@ const CountryList = () => {
     const isSelectedCountry = selectedCountries.find(
       (country) => country.id === id
     );
-    // console.log("isSelectedCountry => ", isSelectedCountry);
 
     if (!isSelectedCountry) {
       setSelectedCountries((prev) => {
-        // console.log("selected1");
         const selectedCountry = updatedCountryList.find(
           (country) => country.id === id
         );
-        // console.log(selectedCountry);
+
+        // supabase에 저장하는 로직 추가
+        if (selectedCountry) {
+          insertData(selectedCountry);
+        }
+
         return selectedCountry ? [...prev, selectedCountry] : prev;
       });
     } else {
       setSelectedCountries((prev) => {
-        console.log("unselected1");
+        // supabase에 저장한 나라 제거
+        // 동일한 id의 나라가 있다면 수파베이스애서 제거하기
+        const selectedCountry = selectedCountries.find(
+          (country) => country.id === id
+        );
+        if (selectedCountry) {
+          deleteData(selectedCountry);
+        }
+
         return prev.filter((country) => country.id !== id);
       });
     }
