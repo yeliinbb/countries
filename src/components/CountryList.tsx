@@ -22,7 +22,7 @@ const CountryList = () => {
     const fetchCountryData = async () => {
       try {
         const data = await fetchDataAndTransform();
-        console.log("data => ", data);
+        // console.log("data => ", data);
         if (countryInfos.length === 0) {
           for (const country of countryInfos) {
             initialCountryInfos.push(country);
