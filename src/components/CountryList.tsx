@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import styled from "styled-components";
 import {
   deleteData,
@@ -16,17 +16,17 @@ const CountryList = () => {
   const [selectedCountries, setSelectedCountries] = useState<
     CountryWithIsSelected[]
   >([]);
+  const [filteredCountries, setFilteredCountries] = useState<
+    CountryWithIsSelected[]
+  >([]);
   let initialCountryInfos: CountryWithIsSelected[] = [];
 
   useEffect(() => {
     const fetchCountryData = async () => {
       try {
         const data = await fetchDataAndTransform();
-        // console.log("data => ", data);
+        console.log("data => ", data);
         if (countryInfos.length === 0) {
-          for (const country of countryInfos) {
-            initialCountryInfos.push(country);
-          }
           setCountryInfos(data || []);
         }
       } catch (error) {
@@ -41,7 +41,92 @@ const CountryList = () => {
       }
     };
     fetchCountryData();
-  }, []);
+  }, [countryInfos]);
+
+  useEffect(() => {
+    initialCountryInfos = [...countryInfos];
+  }, [countryInfos]);
+
+  useEffect(() => {
+    // 배열의 각 요소에서 id를 추출하여 집합(Set)에 저장
+    const selectedCountryIds = new Set(
+      selectedCountries.map((country) => country.id)
+    );
+
+    // countryInfos의 상태를 변화하는 로직 수정 -> filteredCountries에 담아서 ui 그려주기
+    // id가 포함되지 않은 경우 즉, 선택되지 않은 국가들만 필터링해줌.
+    const filtered = countryInfos.filter(
+      (country) => !selectedCountryIds.has(country.id)
+    );
+
+    setFilteredCountries(filtered);
+  }, [countryInfos, selectedCountries]);
+
+  const onToggleSelect = useCallback(
+    (id: CountryWithIsSelected["id"]): void => {
+      const updatedCountryList = countryInfos.map((country) =>
+        country.id === id
+          ? { ...country, isSelected: !country.isSelected }
+          : country
+      );
+
+      const isSelectedCountry = selectedCountries.find(
+        (country) => country.id === id
+      );
+
+      if (!isSelectedCountry) {
+        setSelectedCountries((prev) => {
+          const selectedCountry = updatedCountryList.find(
+            (country) => country.id === id
+          );
+
+          // supabase에 저장하는 로직 추가
+          if (selectedCountry) {
+            insertData(selectedCountry);
+          }
+
+          return selectedCountry ? [...prev, selectedCountry] : prev;
+        });
+      } else {
+        setSelectedCountries((prev) => {
+          // supabase에 저장한 나라 제거
+          // 동일한 id의 나라가 있다면 수파베이스애서 제거하기
+          const selectedCountry = selectedCountries.find(
+            (country) => country.id === id
+          );
+          if (selectedCountry) {
+            deleteData(selectedCountry);
+          }
+
+          return prev.filter((country) => country.id !== id);
+        });
+      }
+    },
+    [countryInfos, selectedCountries]
+  );
+
+  const sortingCountries = useCallback(
+    (sortOption: string) => {
+      setCountryInfos((prev) => {
+        const newArr = [...prev];
+        switch (sortOption) {
+          case "A-Z":
+            newArr.sort((a, b) => a.countryName.localeCompare(b.countryName));
+            break;
+          case "Z-A":
+            newArr.sort((a, b) => b.countryName.localeCompare(a.countryName));
+            break;
+          case "Default":
+            console.log("initialCountryInfos", initialCountryInfos);
+            return [...initialCountryInfos];
+          default:
+            return prev;
+        }
+        return newArr;
+      });
+    },
+    [setCountryInfos, initialCountryInfos]
+  );
 
   if (isLoading) {
     return <div style={{ fontSize: 36 }}>로딩중...</div>;
@@ -53,81 +138,6 @@ const CountryList = () => {
       <div style={{ fontSize: 24 }}>에러가 발생했습니다: {error.message}</div>
     );
   }
-
-  const onToggleSelect = (id: CountryWithIsSelected["id"]): void => {
-    const updatedCountryList = countryInfos.map((country) =>
-      country.id === id
-        ? { ...country, isSelected: !country.isSelected }
-        : country
-    );
-
-    const isSelectedCountry = selectedCountries.find(
-      (country) => country.id === id
-    );
-
-    if (!isSelectedCountry) {
-      setSelectedCountries((prev) => {
-        const selectedCountry = updatedCountryList.find(
-          (country) => country.id === id
-        );
-
-        // supabase에 저장하는 로직 추가
-        if (selectedCountry) {
-          insertData(selectedCountry);
-        }
-
-        return selectedCountry ? [...prev, selectedCountry] : prev;
-      });
-    } else {
-      setSelectedCountries((prev) => {
-        // supabase에 저장한 나라 제거
-        // 동일한 id의 나라가 있다면 수파베이스애서 제거하기
-        const selectedCountry = selectedCountries.find(
-          (country) => country.id === id
-        );
-        if (selectedCountry) {
-          deleteData(selectedCountry);
-        }
-
-        return prev.filter((country) => country.id !== id);
-      });
-    }
-  };
-
-  // 배열의 각 요소에서 id를 추출하여 집합(Set)에 저장
-  const selectedCountryIds = new Set(
-    selectedCountries.map((country) => country.id)
-  );
-  // countryInfos의 상태를 변화하는 로직 수정 -> filteredCountries에 담아서 ui 그려주기
-  // id가 포함되지 않은 경우 즉, 선택되지 않은 국가들만 필터링해줌.
-  const filteredCountries = countryInfos.filter(
-    (country) => !selectedCountryIds.has(country.id)
-  );
-
-  const sortCountries = (
-    sortOption: string,
-    countryInfos: CountryWithIsSelected[]
-  ): CountryWithIsSelected[] => {
-    const newArr = [...countryInfos];
-    switch (sortOption) {
-      case "A-Z":
-        newArr.sort((a, b) => a.countryName.localeCompare(b.countryName));
-        break;
-      case "Z-A":
-        newArr.sort((a, b) => b.countryName.localeCompare(a.countryName));
-        break;
-      case "Default":
-        return [...initialCountryInfos];
-      default:
-        return countryInfos;
-    }
-    return newArr;
-  };
-
-  const handleSortChange = (sortOption: string) => {
-    const sortedCountries = sortCountries(sortOption, countryInfos);
-    setCountryInfos(sortedCountries);
-  };
 
   return (
     <Main>
@@ -144,9 +154,9 @@ const CountryList = () => {
         <h2>Countries</h2>
         <BtnBox>
           <span>[ Sorted By ]</span>
-          <button onClick={() => handleSortChange("Default")}>Default</button>
-          <button onClick={() => handleSortChange("A-Z")}>A-Z</button>
-          <button onClick={() => handleSortChange("Z-A")}>Z-A</button>
+          <button onClick={() => sortingCountries("Default")}>Default</button>
+          <button onClick={() => sortingCountries("A-Z")}>A-Z</button>
+          <button onClick={() => sortingCountries("Z-A")}>Z-A</button>
         </BtnBox>
         {/* countryInfos 자체를 넘겨주는게 아니라 filteredCountries를 넘겨줘서
         기존의 countryInfos는 초기값을 유지할 수 있도록 */}
